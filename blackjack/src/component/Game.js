@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import blinded from "./1B.svg";
 
+// Dynamically import all card images from the ./asset directory, excluding 1B.svg
 const cardsContext = require.context("./asset", false, /\.svg$/);
-const cards = cardsContext.keys().map(cardsContext);
+const cards = cardsContext
+  .keys()
+  .map(cardsContext)
+  .filter((src) => !src.includes("1B.svg"));
 
 const getRandomCard = () => {
   const randomIndex = Math.floor(Math.random() * cards.length);
@@ -34,39 +38,40 @@ const calculateTotal = (cardImages) => {
 
 const Game = (props) => {
   const { playerName } = props;
+  const playerCard1 = getRandomCard();
+  const playerCard2 = getRandomCard();
+  const dealerCard1 = getRandomCard();
+  const [playerCards, setPlayerCards] = useState([playerCard1, playerCard2]);
+  const [dealerCards, setDealerCards] = useState([dealerCard1, blinded]);
+  const [total, setTotal] = useState(
+    calculateTotal([{ src: playerCard1 }, { src: playerCard2 }])
+  );
 
   const handleMoreClick = () => {
-    const playerCardContainer = document.querySelector(".player-card");
-    const newCardImage = document.createElement("img");
-    newCardImage.src = getRandomCard();
-    newCardImage.alt = "New Card";
-    newCardImage.height = 300;
-    newCardImage.width = 200;
-    playerCardContainer.appendChild(newCardImage);
+    const newCard = getRandomCard();
+    setPlayerCards([...playerCards, newCard]);
 
-    const playerCardImages = playerCardContainer.querySelectorAll("img");
-    const total = calculateTotal(playerCardImages);
+    const playerCardImages = [...playerCards, newCard].map((src) => ({ src }));
+    const newTotal = calculateTotal(playerCardImages);
+    setTotal(newTotal);
 
-    if (total > 21) {
-      alert("You lose!");
-      document.querySelector(
-        ".card-footer button:nth-child(1)"
-      ).disabled = true;
-      document.querySelector(
-        ".card-footer button:nth-child(2)"
-      ).disabled = true;
+    if (newTotal === 21) {
+      alert("You Win!");
+    } else if (newTotal > 21) {
+      setTimeout(() => {
+        alert("You lose!");
+        document.querySelector(
+          ".card-footer button:nth-child(1)"
+        ).disabled = true;
+        document.querySelector(
+          ".card-footer button:nth-child(2)"
+        ).disabled = true;
+      }, 5);
     }
   };
 
   const handleShowClick = () => {
-    const dealerCardImages = document.querySelectorAll(".dealer-card img");
-    if (dealerCardImages.length > 1) {
-      dealerCardImages[1].src = getRandomCard();
-    }
-
-    document.querySelector(".card-footer button:nth-child(2)").disabled = true;
-
-    // Calculate the total of the dealer's card
+    setDealerCards([dealerCards[0], getRandomCard()]);
   };
 
   return (
@@ -75,16 +80,33 @@ const Game = (props) => {
         <h2>Dealer</h2>
       </div>
       <div className="dealer-card">
-        <img src={getRandomCard()} alt="card 1" height={300} width={200} />
-        <img src={blinded} alt="card 2" height={300} width={200} />
+        {dealerCards.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`dealer card ${index + 1}`}
+            height={300}
+            width={200}
+          />
+        ))}
       </div>
 
       <div className="player-title">
         <h2>{playerName}</h2>
       </div>
       <div className="player-card">
-        <img src={getRandomCard()} alt="card 1" height={300} width={200} />
-        <img src={getRandomCard()} alt="card 2" height={300} width={200} />
+        {playerCards.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`player card ${index + 1}`}
+            height={300}
+            width={200}
+          />
+        ))}
+      </div>
+      <div className="player-total">
+        <h3>Total: {total}</h3>
       </div>
       <div className="card-footer">
         <button
