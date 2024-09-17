@@ -1,6 +1,5 @@
 import React from "react";
-import card from "./asset/2S.svg";
-import blinded from "./asset/1B.svg";
+import blinded from "./1B.svg";
 
 const cardsContext = require.context("./asset", false, /\.svg$/);
 const cards = cardsContext.keys().map(cardsContext);
@@ -30,7 +29,7 @@ const Game = (props) => {
         <h2>Dealer</h2>
       </div>
       <div className="dealer-card">
-        <img src={card} alt="card 1" height={300} width={200} />
+        <img src={getRandomCard()} alt="card 1" height={300} width={200} />
         <img src={blinded} alt="card 2" height={300} width={200} />
       </div>
 
@@ -38,8 +37,8 @@ const Game = (props) => {
         <h2>{playerName}</h2>
       </div>
       <div className="player-card">
-        <img src={card} alt="card 1" height={300} width={200} />
-        <img src={card} alt="card 2" height={300} width={200} />
+        <img src={getRandomCard()} alt="card 1" height={300} width={200} />
+        <img src={getRandomCard()} alt="card 2" height={300} width={200} />
       </div>
       <div className="card-footer">
         <button
