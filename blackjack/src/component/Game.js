@@ -14,7 +14,7 @@ const getCardValue = (cardSrc) => {
   const value = cardName[0];
   if (value === "A") return 11;
   if (["K", "Q", "J"].includes(value)) return 10;
-  return parseInt(value, 10);
+  return Number.parseInt(value, 10);
 };
 
 const calculateTotal = (cardImages) => {
@@ -46,6 +46,7 @@ const Game = (props) => {
 
     const playerCardImages = playerCardContainer.querySelectorAll("img");
     const total = calculateTotal(playerCardImages);
+
     if (total > 21) {
       alert("You lose!");
       document.querySelector(
@@ -60,8 +61,12 @@ const Game = (props) => {
   const handleShowClick = () => {
     const dealerCardImages = document.querySelectorAll(".dealer-card img");
     if (dealerCardImages.length > 1) {
-      dealerCardImages[1].src = getRandomCard(); // Change the src attribute of the second image to card6
+      dealerCardImages[1].src = getRandomCard();
     }
+
+    document.querySelector(".card-footer button:nth-child(2)").disabled = true;
+
+    // Calculate the total of the dealer's card
   };
 
   return (
