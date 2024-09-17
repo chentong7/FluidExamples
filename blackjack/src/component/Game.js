@@ -2,6 +2,14 @@ import React from "react";
 import card from "./asset/2S.svg";
 import blinded from "./asset/1B.svg";
 
+const cardsContext = require.context("./asset", false, /\.svg$/);
+const cards = cardsContext.keys().map(cardsContext);
+
+const getRandomCard = () => {
+  const randomIndex = Math.floor(Math.random() * cards.length);
+  return cards[randomIndex];
+};
+
 const Game = (props) => {
   const { playerName } = props;
 
@@ -10,7 +18,10 @@ const Game = (props) => {
   };
 
   const handleShowClick = () => {
-    alert("Render Blinded card image");
+    const dealerCardImages = document.querySelectorAll(".dealer-card img");
+    if (dealerCardImages.length > 1) {
+      dealerCardImages[1].src = getRandomCard(); // Change the src attribute of the second image to card6
+    }
   };
 
   return (
