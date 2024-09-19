@@ -49,16 +49,17 @@ const Game = (props) => {
 
   const handleMoreClick = () => {
     const newCard = getRandomCard();
-    setPlayerCards([...playerCards, newCard]);
+    const newPlayerCards = [...playerCards, newCard];
+    setPlayerCards(newPlayerCards);
 
-    const playerCardImages = [...playerCards, newCard].map((src) => ({ src }));
+    const playerCardImages = newPlayerCards.map((src) => ({ src }));
     const newTotal = calculateTotal(playerCardImages);
     setTotal(newTotal);
 
-    if (newTotal === 21) {
-      alert("You Win!");
-    } else if (newTotal > 21) {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (newTotal === 21) {
+        alert("You Win!");
+      } else if (newTotal > 21) {
         alert("You lose!");
         document.querySelector(
           ".card-footer button:nth-child(1)"
@@ -66,12 +67,29 @@ const Game = (props) => {
         document.querySelector(
           ".card-footer button:nth-child(2)"
         ).disabled = true;
-      }, 5);
-    }
+      }
+    }, 0);
   };
 
   const handleShowClick = () => {
-    setDealerCards([dealerCards[0], getRandomCard()]);
+    const newDealerCard = getRandomCard();
+    const newDealerCards = [dealerCards[0], newDealerCard];
+    setDealerCards(newDealerCards);
+
+    const dealerTotal = calculateTotal(newDealerCards.map((src) => ({ src })));
+
+    setTimeout(() => {
+      document.querySelector(".card-footer button:nth-child(1)").disabled = true;
+      document.querySelector(".card-footer button:nth-child(2)").disabled = true;
+
+      if (dealerTotal > 21 || total > dealerTotal) {
+        alert("You Win!");
+      } else if (total < dealerTotal) {
+        alert("You lose!");
+      } else {
+        alert("It's a tie!");
+      }
+    }, 0);
   };
 
   return (
@@ -114,7 +132,7 @@ const Game = (props) => {
           onClick={handleMoreClick}
           onKeyUp={handleMoreClick}
         >
-          Get more card button??
+          Get more card
         </button>
         <button
           type="button"
