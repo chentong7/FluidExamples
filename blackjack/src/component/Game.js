@@ -68,7 +68,7 @@ const Game = (props) => {
           ".card-footer button:nth-child(2)"
         ).disabled = true;
       }
-    }, 0);
+    }, 500);
   };
 
   const handleShowClick = () => {
@@ -89,7 +89,7 @@ const Game = (props) => {
       } else {
         alert("It's a tie!");
       }
-    }, 0);
+    }, 500);
   };
 
   return (
