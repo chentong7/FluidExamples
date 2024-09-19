@@ -25,7 +25,7 @@ const calculateTotal = (cardImages) => {
   let total = 0;
   let aceCount = 0;
   cardImages.forEach((img) => {
-    const value = getCardValue(img.src);
+    const value = getCardValue(img);
     total += value;
     if (value === 11) aceCount++;
   });
@@ -44,7 +44,10 @@ const Game = (props) => {
   const [playerCards, setPlayerCards] = useState([playerCard1, playerCard2]);
   const [dealerCards, setDealerCards] = useState([dealerCard1, blinded]);
   const [total, setTotal] = useState(
-    calculateTotal([{ src: playerCard1 }, { src: playerCard2 }])
+    calculateTotal([playerCard1, playerCard2])
+  );
+  const [dealerTotal, setDealerTotal] = useState(
+    calculateTotal([dealerCard1])
   );
 
   const handleMoreClick = () => {
@@ -52,14 +55,11 @@ const Game = (props) => {
     const newPlayerCards = [...playerCards, newCard];
     setPlayerCards(newPlayerCards);
 
-    const playerCardImages = newPlayerCards.map((src) => ({ src }));
-    const newTotal = calculateTotal(playerCardImages);
+    const newTotal = calculateTotal(newPlayerCards);
     setTotal(newTotal);
 
-    setTimeout(() => {
-      if (newTotal === 21) {
-        alert("You Win!");
-      } else if (newTotal > 21) {
+    if (newTotal > 21) {
+      setTimeout(() => {
         alert("You lose!");
         document.querySelector(
           ".card-footer button:nth-child(1)"
@@ -67,8 +67,12 @@ const Game = (props) => {
         document.querySelector(
           ".card-footer button:nth-child(2)"
         ).disabled = true;
-      }
-    }, 500);
+      }, 500);
+    } else if (newTotal === 21) {
+      setTimeout(() => {
+        alert("You Win!");
+      }, 500);
+    }
   };
 
   const handleShowClick = () => {
@@ -76,7 +80,8 @@ const Game = (props) => {
     const newDealerCards = [dealerCards[0], newDealerCard];
     setDealerCards(newDealerCards);
 
-    const dealerTotal = calculateTotal(newDealerCards.map((src) => ({ src })));
+    const dealerTotal = calculateTotal(newDealerCards);
+    setDealerTotal(dealerTotal);
 
     setTimeout(() => {
       document.querySelector(".card-footer button:nth-child(1)").disabled = true;
@@ -107,6 +112,9 @@ const Game = (props) => {
             width={200}
           />
         ))}
+      </div>
+      <div className="dealer-total">
+        <h3>Total: {dealerTotal}</h3>
       </div>
 
       <div className="player-title">
