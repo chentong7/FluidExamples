@@ -1,38 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Dealer from "./Dealer";
 import Player from "./Player";
 import { getRandomCard, calculateTotal } from "./utils";
 import blinded from "./1B.svg";
 
 const Game = () => {
-  const [playerName, setPlayerName] = useState("");
-  const playerCard1 = getRandomCard();
-  const playerCard2 = getRandomCard();
+  const [numPlayers, setNumPlayers] = useState(1);
+  const [playerNames, setPlayerNames] = useState(["Player 1"]);
+  const [playerCards, setPlayerCards] = useState([[]]);
+  const [totals, setTotals] = useState([0]);
   const dealerCard1 = getRandomCard();
-  const [playerCards, setPlayerCards] = useState([playerCard1, playerCard2]);
   const [dealerCards, setDealerCards] = useState([dealerCard1, blinded]);
-  const [total, setTotal] = useState(0);
   const [dealerTotal, setDealerTotal] = useState(0);
 
-  const handleMoreClick = () => {
+  useEffect(() => {
+    // Initialize player cards with 2 cards each when the number of players changes
+    setPlayerCards(
+      Array.from({ length: numPlayers }, () => [
+        getRandomCard(),
+        getRandomCard(),
+      ])
+    );
+    setTotals(Array.from({ length: numPlayers }, () => 0));
+  }, [numPlayers]);
+
+  const handleNumPlayersChange = (e) => {
+    const num = Number.parseInt(e.target.value, 10);
+    setNumPlayers(num);
+    setPlayerNames(Array.from({ length: num }, (_, i) => `Player ${i + 1}`));
+    setPlayerCards(
+      Array.from({ length: num }, () => [getRandomCard(), getRandomCard()])
+    );
+    setTotals(Array.from({ length: num }, () => 0));
+  };
+
+  const handleMoreClick = (playerIndex) => {
     const newCard = getRandomCard();
-    const newPlayerCards = [...playerCards, newCard];
-    setPlayerCards(newPlayerCards);
+    const newPlayerCards = [...playerCards[playerIndex], newCard];
+    const newPlayerCardsArray = [...playerCards];
+    newPlayerCardsArray[playerIndex] = newPlayerCards;
+    setPlayerCards(newPlayerCardsArray);
 
     const newTotal = calculateTotal(newPlayerCards);
-    setTotal(newTotal);
+    const newTotals = [...totals];
+    newTotals[playerIndex] = newTotal;
+    setTotals(newTotals);
 
     if (newTotal > 21) {
       setTimeout(() => {
-        alert("You lose!");
-        const moreButton = document.querySelector(".card-footer button:more");
-        const showButton = document.querySelector(".card-footer button:show");
-        if (moreButton) moreButton.disabled = true;
-        if (showButton) showButton.disabled = true;
+        alert(`${playerNames[playerIndex]} loses!`);
+        document.querySelector(
+          `.card-footer button[name='more-${playerIndex}']`
+        ).disabled = true;
+        document.querySelector(
+          `.card-footer button[name='show']`
+        ).disabled = true;
       }, 500);
     } else if (newTotal === 21) {
       setTimeout(() => {
-        alert("You Win!");
+        alert(`${playerNames[playerIndex]} Wins!`);
       }, 500);
     }
   };
@@ -46,43 +72,70 @@ const Game = () => {
     setDealerTotal(dealerTotal);
 
     setTimeout(() => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      document
+        .querySelectorAll(".card-footer button[name^='more-']")
+        // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+        .forEach((button) => (button.disabled = true));
       document.querySelector(
-        ".card-footer button[name='more']"
-      ).disabled = true;
-      document.querySelector(
-        ".card-footer button[name='show']"
+        `.card-footer button[name='show']`
       ).disabled = true;
 
-      if (dealerTotal > 21 || total > dealerTotal) {
-        alert("You Win!");
-      } else if (total < dealerTotal) {
-        alert("You lose!");
+      const winningPlayers = playerNames.filter(
+        (_, i) => totals[i] <= 21 && totals[i] > dealerTotal
+      );
+      if (dealerTotal > 21 || winningPlayers.length > 0) {
+        alert(`${winningPlayers.join(", ")} Win!`);
       } else {
-        alert("It's a tie!");
+        alert("Dealer Wins!");
       }
     }, 500);
   };
 
   return (
     <div className="game">
+      <div>
+        <label htmlFor="numPlayers">Number of Players: </label>
+        <input
+          type="number"
+          id="numPlayers"
+          value={numPlayers}
+          onChange={handleNumPlayersChange}
+          min="1"
+        />
+      </div>
       <Dealer
         dealerCards={dealerCards}
         setDealerCards={setDealerCards}
         dealerTotal={dealerTotal}
         setDealerTotal={setDealerTotal}
       />
-      <Player
-        playerName={playerName}
-        setPlayerName={setPlayerName}
-        playerCards={playerCards}
-        setPlayerCards={setPlayerCards}
-        total={total}
-        setTotal={setTotal}
-      />
+      {playerNames.map((playerName, index) => (
+        <Player
+          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+          key={index}
+          playerName={playerName}
+          setPlayerName={(name) => {
+            const newPlayerNames = [...playerNames];
+            newPlayerNames[index] = name;
+            setPlayerNames(newPlayerNames);
+          }}
+          playerCards={playerCards[index]}
+          setPlayerCards={(cards) => {
+            const newPlayerCards = [...playerCards];
+            newPlayerCards[index] = cards;
+            setPlayerCards(newPlayerCards);
+          }}
+          total={totals[index]}
+          setTotal={(total) => {
+            const newTotals = [...totals];
+            newTotals[index] = total;
+            setTotals(newTotals);
+          }}
+          handleMoreClick={() => handleMoreClick(index)}
+        />
+      ))}
       <div className="card-footer">
-        <button type="button" name="more" onClick={handleMoreClick}>
-          Get more card
-        </button>
         <button type="button" name="show" onClick={handleShowClick}>
           Show dealer's card
         </button>

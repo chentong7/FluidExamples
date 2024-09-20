@@ -7,6 +7,7 @@ const Player = ({
   playerCards,
   total,
   setTotal,
+  handleMoreClick,
 }) => {
   const promptShown = useRef(false);
 
@@ -14,9 +15,9 @@ const Player = ({
     if (!promptShown.current) {
       promptShown.current = true;
       const name = prompt("Please enter your name:");
-      setPlayerName(name || "Player");
+      setPlayerName(name || playerName);
     }
-  }, [setPlayerName]);
+  }, [playerName, setPlayerName]);
 
   useEffect(() => {
     setTotal(calculateTotal(playerCards));
@@ -41,6 +42,15 @@ const Player = ({
       </div>
       <div className="player-total">
         <h3>Total: {total}</h3>
+      </div>
+      <div className="card-footer">
+        <button
+          type="button"
+          name={`more-${playerName}`}
+          onClick={handleMoreClick}
+        >
+          Get more card
+        </button>
       </div>
     </div>
   );
