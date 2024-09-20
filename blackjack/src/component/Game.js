@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import blinded from "./1B.svg";
 
 // Dynamically import all card images from the ./asset directory, excluding 1B.svg
@@ -36,8 +36,8 @@ const calculateTotal = (cardImages) => {
   return total;
 };
 
-const Game = (props) => {
-  const { playerName } = props;
+const Game = () => {
+  const [playerName, setPlayerName] = useState("");
   const playerCard1 = getRandomCard();
   const playerCard2 = getRandomCard();
   const dealerCard1 = getRandomCard();
@@ -46,9 +46,17 @@ const Game = (props) => {
   const [total, setTotal] = useState(
     calculateTotal([playerCard1, playerCard2])
   );
-  const [dealerTotal, setDealerTotal] = useState(
-    calculateTotal([dealerCard1])
-  );
+  const [dealerTotal, setDealerTotal] = useState(calculateTotal([dealerCard1]));
+
+  const promptShown = useRef(false);
+
+  useEffect(() => {
+    if (!promptShown.current) {
+      promptShown.current = true;
+      const name = prompt("Please enter your name:");
+      setPlayerName(name || "Player");
+    }
+  }, []);
 
   const handleMoreClick = () => {
     const newCard = getRandomCard();
@@ -84,8 +92,12 @@ const Game = (props) => {
     setDealerTotal(dealerTotal);
 
     setTimeout(() => {
-      document.querySelector(".card-footer button:nth-child(1)").disabled = true;
-      document.querySelector(".card-footer button:nth-child(2)").disabled = true;
+      document.querySelector(
+        ".card-footer button:nth-child(1)"
+      ).disabled = true;
+      document.querySelector(
+        ".card-footer button:nth-child(2)"
+      ).disabled = true;
 
       if (dealerTotal > 21 || total > dealerTotal) {
         alert("You Win!");
@@ -135,18 +147,10 @@ const Game = (props) => {
         <h3>Total: {total}</h3>
       </div>
       <div className="card-footer">
-        <button
-          type="button"
-          onClick={handleMoreClick}
-          onKeyUp={handleMoreClick}
-        >
+        <button type="button" onClick={handleMoreClick}>
           Get more card
         </button>
-        <button
-          type="button"
-          onClick={handleShowClick}
-          onKeyUp={handleShowClick}
-        >
+        <button type="button" onClick={handleShowClick}>
           Show dealer's card
         </button>
       </div>
