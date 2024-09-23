@@ -14,12 +14,12 @@ const Game = ({ playersMap, initialDataLoaded }) => {
   const [dealerTotal, setDealerTotal] = useState(0);
 
   useEffect(() => {
-    if (initialDataLoaded) {
+    if (initialDataLoaded && playersMap) {
       // Load existing data from playersMap
-      setPlayerNames(playersMap.get("playerNames"));
-      setPlayerCards(playersMap.get("playerCards"));
-      setTotals(playersMap.get("totals"));
-      setNumPlayers(playersMap.get("playerNames").length);
+      setPlayerNames(playersMap.get("playerNames") || ["Player 1"]);
+      setPlayerCards(playersMap.get("playerCards") || [[]]);
+      setTotals(playersMap.get("totals") || [0]);
+      setNumPlayers((playersMap.get("playerNames") || ["Player 1"]).length);
     } else {
       // Initialize player cards with 2 cards each when the number of players changes
       setPlayerCards(
@@ -33,10 +33,12 @@ const Game = ({ playersMap, initialDataLoaded }) => {
   }, [initialDataLoaded, numPlayers, playersMap]);
 
   useEffect(() => {
-    // Update playersMap whenever playerNames or playerCards change
-    playersMap.set("playerNames", playerNames);
-    playersMap.set("playerCards", playerCards);
-    playersMap.set("totals", totals);
+    if (playersMap) {
+      // Update playersMap whenever playerNames, playerCards, or totals change
+      playersMap.set("playerNames", playerNames);
+      playersMap.set("playerCards", playerCards);
+      playersMap.set("totals", totals);
+    }
   }, [playerNames, playerCards, totals, playersMap]);
 
   const handleNumPlayersChange = (e) => {
@@ -57,9 +59,11 @@ const Game = ({ playersMap, initialDataLoaded }) => {
     newTotals[playerIndex] = newTotal;
     setTotals(newTotals);
 
-    // Update playersMap with new player cards and totals
-    playersMap.set("playerCards", newPlayerCardsArray);
-    playersMap.set("totals", newTotals);
+    if (playersMap) {
+      // Update playersMap with new player cards and totals
+      playersMap.set("playerCards", newPlayerCardsArray);
+      playersMap.set("totals", newTotals);
+    }
 
     if (newTotal > 21) {
       setTimeout(() => {
@@ -125,30 +129,37 @@ const Game = ({ playersMap, initialDataLoaded }) => {
       />
       {playerNames.map((playerName, index) => (
         <Player
+          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
           key={index}
           playerName={playerName}
           setPlayerName={(name) => {
             const newPlayerNames = [...playerNames];
             newPlayerNames[index] = name;
             setPlayerNames(newPlayerNames);
-            // Update playersMap with new player names
-            playersMap.set("playerNames", newPlayerNames);
+            if (playersMap) {
+              // Update playersMap with new player names
+              playersMap.set("playerNames", newPlayerNames);
+            }
           }}
           playerCards={playerCards[index]}
           setPlayerCards={(cards) => {
             const newPlayerCards = [...playerCards];
             newPlayerCards[index] = cards;
             setPlayerCards(newPlayerCards);
-            // Update playersMap with new player cards
-            playersMap.set("playerCards", newPlayerCards);
+            if (playersMap) {
+              // Update playersMap with new player cards
+              playersMap.set("playerCards", newPlayerCards);
+            }
           }}
           total={totals[index]}
           setTotal={(total) => {
             const newTotals = [...totals];
             newTotals[index] = total;
             setTotals(newTotals);
-            // Update playersMap with new totals
-            playersMap.set("totals", newTotals);
+            if (playersMap) {
+              // Update playersMap with new totals
+              playersMap.set("totals", newTotals);
+            }
           }}
           handleMoreClick={() => handleMoreClick(index)}
         />

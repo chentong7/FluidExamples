@@ -40,10 +40,6 @@ function App() {
     start().catch((error) => console.error(error));
   }, []);
 
-  if (!playersMap) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="App">
       <Game playersMap={playersMap} initialDataLoaded={initialDataLoaded} />
