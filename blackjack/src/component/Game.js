@@ -4,7 +4,7 @@ import Player from "./Player";
 import { getRandomCard, calculateTotal } from "./utils";
 import blinded from "./1B.svg";
 
-const Game = () => {
+const Game = ({ playersMap }) => {
   const [numPlayers, setNumPlayers] = useState(1);
   const [playerNames, setPlayerNames] = useState(["Player 1"]);
   const [playerCards, setPlayerCards] = useState([[]]);
@@ -23,6 +23,12 @@ const Game = () => {
     );
     setTotals(Array.from({ length: numPlayers }, () => 0));
   }, [numPlayers]);
+
+  useEffect(() => {
+    // Update playersMap whenever playerNames or playerCards change
+    playersMap.set("playerNames", playerNames);
+    playersMap.set("playerCards", playerCards);
+  }, [playerNames, playerCards, playersMap]);
 
   const handleNumPlayersChange = (e) => {
     const num = Number.parseInt(e.target.value, 10);
@@ -72,14 +78,9 @@ const Game = () => {
     setDealerTotal(dealerTotal);
 
     setTimeout(() => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       document
         .querySelectorAll(".card-footer button[name^='more-']")
-        // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
         .forEach((button) => (button.disabled = true));
-      document.querySelector(
-        `.card-footer button[name='show']`
-      ).disabled = true;
 
       const winningPlayers = playerNames.filter(
         (_, i) => totals[i] <= 21 && totals[i] > dealerTotal
@@ -112,7 +113,6 @@ const Game = () => {
       />
       {playerNames.map((playerName, index) => (
         <Player
-          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
           key={index}
           playerName={playerName}
           setPlayerName={(name) => {
