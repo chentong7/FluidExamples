@@ -4,7 +4,7 @@ import Player from "./Player";
 import { getRandomCard, calculateTotal } from "./utils";
 import blinded from "./1B.svg";
 
-const Game = ({ playersMap }) => {
+const Game = ({ playersMap, initialDataLoaded }) => {
   const [numPlayers, setNumPlayers] = useState(1);
   const [playerNames, setPlayerNames] = useState(["Player 1"]);
   const [playerCards, setPlayerCards] = useState([[]]);
@@ -14,30 +14,35 @@ const Game = ({ playersMap }) => {
   const [dealerTotal, setDealerTotal] = useState(0);
 
   useEffect(() => {
-    // Initialize player cards with 2 cards each when the number of players changes
-    setPlayerCards(
-      Array.from({ length: numPlayers }, () => [
-        getRandomCard(),
-        getRandomCard(),
-      ])
-    );
-    setTotals(Array.from({ length: numPlayers }, () => 0));
-  }, [numPlayers]);
+    if (initialDataLoaded) {
+      // Load existing data from playersMap
+      setPlayerNames(playersMap.get("playerNames"));
+      setPlayerCards(playersMap.get("playerCards"));
+      setTotals(playersMap.get("totals"));
+      setNumPlayers(playersMap.get("playerNames").length);
+    } else {
+      // Initialize player cards with 2 cards each when the number of players changes
+      setPlayerCards(
+        Array.from({ length: numPlayers }, () => [
+          getRandomCard(),
+          getRandomCard(),
+        ])
+      );
+      setTotals(Array.from({ length: numPlayers }, () => 0));
+    }
+  }, [initialDataLoaded, numPlayers, playersMap]);
 
   useEffect(() => {
     // Update playersMap whenever playerNames or playerCards change
     playersMap.set("playerNames", playerNames);
     playersMap.set("playerCards", playerCards);
-  }, [playerNames, playerCards, playersMap]);
+    playersMap.set("totals", totals);
+  }, [playerNames, playerCards, totals, playersMap]);
 
   const handleNumPlayersChange = (e) => {
     const num = Number.parseInt(e.target.value, 10);
     setNumPlayers(num);
     setPlayerNames(Array.from({ length: num }, (_, i) => `Player ${i + 1}`));
-    setPlayerCards(
-      Array.from({ length: num }, () => [getRandomCard(), getRandomCard()])
-    );
-    setTotals(Array.from({ length: num }, () => 0));
   };
 
   const handleMoreClick = (playerIndex) => {
@@ -51,6 +56,10 @@ const Game = ({ playersMap }) => {
     const newTotals = [...totals];
     newTotals[playerIndex] = newTotal;
     setTotals(newTotals);
+
+    // Update playersMap with new player cards and totals
+    playersMap.set("playerCards", newPlayerCardsArray);
+    playersMap.set("totals", newTotals);
 
     if (newTotal > 21) {
       setTimeout(() => {
@@ -78,9 +87,12 @@ const Game = ({ playersMap }) => {
     setDealerTotal(dealerTotal);
 
     setTimeout(() => {
-      document
-        .querySelectorAll(".card-footer button[name^='more-']")
-        .forEach((button) => (button.disabled = true));
+      const buttons = document.querySelectorAll(
+        ".card-footer button[name^='more-']"
+      );
+      for (const button of buttons) {
+        button.disabled = true;
+      }
 
       const winningPlayers = playerNames.filter(
         (_, i) => totals[i] <= 21 && totals[i] > dealerTotal
@@ -119,18 +131,24 @@ const Game = ({ playersMap }) => {
             const newPlayerNames = [...playerNames];
             newPlayerNames[index] = name;
             setPlayerNames(newPlayerNames);
+            // Update playersMap with new player names
+            playersMap.set("playerNames", newPlayerNames);
           }}
           playerCards={playerCards[index]}
           setPlayerCards={(cards) => {
             const newPlayerCards = [...playerCards];
             newPlayerCards[index] = cards;
             setPlayerCards(newPlayerCards);
+            // Update playersMap with new player cards
+            playersMap.set("playerCards", newPlayerCards);
           }}
           total={totals[index]}
           setTotal={(total) => {
             const newTotals = [...totals];
             newTotals[index] = total;
             setTotals(newTotals);
+            // Update playersMap with new totals
+            playersMap.set("totals", newTotals);
           }}
           handleMoreClick={() => handleMoreClick(index)}
         />

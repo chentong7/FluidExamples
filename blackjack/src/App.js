@@ -6,24 +6,35 @@ import { TinyliciousClient } from "@fluidframework/tinylicious-client";
 
 const client = new TinyliciousClient();
 const containerSchema = {
-  initialObjects: { playersMap: SharedMap }
+  initialObjects: { playersMap: SharedMap },
 };
 
 function App() {
   const [playersMap, setPlayersMap] = useState(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   useEffect(() => {
     const start = async () => {
       let container;
-      if (location.hash) {
-        const id = location.hash.substring(1);
+      if (window.location.hash) {
+        const id = window.location.hash.substring(1);
         ({ container } = await client.getContainer(id, containerSchema));
       } else {
         ({ container } = await client.createContainer(containerSchema));
         const id = await container.attach();
-        location.hash = id;
+        window.location.hash = id;
       }
-      setPlayersMap(container.initialObjects.playersMap);
+      const map = container.initialObjects.playersMap;
+      setPlayersMap(map);
+
+      // Load existing data from the playersMap if available
+      if (
+        map.has("playerNames") &&
+        map.has("playerCards") &&
+        map.has("totals")
+      ) {
+        setInitialDataLoaded(true);
+      }
     };
 
     start().catch((error) => console.error(error));
@@ -35,7 +46,7 @@ function App() {
 
   return (
     <div className="App">
-      <Game playersMap={playersMap} />
+      <Game playersMap={playersMap} initialDataLoaded={initialDataLoaded} />
     </div>
   );
 }
