@@ -4,7 +4,7 @@ import { calculateTotal } from "./utils";
 const Player = ({
   playerName,
   setPlayerName,
-  playerCards = [],
+  playerCards,
   total,
   setTotal,
   handleMoreClick,
